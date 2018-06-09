@@ -1,6 +1,6 @@
 import React, {Component, Fragment} from 'react';
 import Eos from "eosjs";
-import { Segment, Button, Form, Icon, Label, Menu, Table } from 'semantic-ui-react';
+import { Segment, Button, Form, Icon, Label, Menu, Table, Grid } from 'semantic-ui-react';
 
 export class Bid extends Component {
     constructor(props) {
@@ -19,54 +19,58 @@ export class Bid extends Component {
 
     render() {
         return (
-                <Fragment>
-                    <Segment inverted>
-                        <Form inverted>
-                                <Form.Input name='accountName' label='Account name' type='text' value={this.state.accountName} onChange={this.handleChange} />
-                                <Form.Input name='pk' label='pk' type='password' value={this.state.pk} onChange={this.handleChange} />
-                                <Form.Input name='amount' label='Amount' type='number' value={this.state.amount} onChange={this.handleChange} />
-                                <Form.Input name='price' label='Price' type='number' value={this.state.price} onChange={this.handleChange} />
-                                <Button basic color='red' onClick={this.handleClickBuy}>Buy</Button>
-                                <Button basic color='green' onClick={this.handleClickSell}>Sell</Button>
-                        </Form>
-                    </Segment>
-                    Ask
-                    <Table celled>
-                        <Table.Header>
-                            <Table.Row>
-                                <Table.HeaderCell>Price</Table.HeaderCell>
-                                <Table.HeaderCell>Amount</Table.HeaderCell>
-                            </Table.Row>
-                        </Table.Header>
+                <Segment inverted>
+                    <Grid stackable>
+                        <Grid.Column width={6}>
+                            <Form inverted>
+                                    <Form.Input name='accountName' label='Account name' type='text' value={this.state.accountName} onChange={this.handleChange} />
+                                    <Form.Input name='pk' label='pk' type='password' value={this.state.pk} onChange={this.handleChange} />
+                                    <Form.Input name='amount' label='Amount' type='number' value={this.state.amount} onChange={this.handleChange} />
+                                    <Form.Input name='price' label='Price' type='number' value={this.state.price} onChange={this.handleChange} />
+                                    <Button basic color='red' onClick={this.handleClickBuy}>Buy</Button>
+                                    <Button basic color='green' onClick={this.handleClickSell}>Sell</Button>
+                            </Form>
+                        </Grid.Column>
+                        <Grid.Column floated='right' width={8}>
+                            Ask
+                            <Table celled>
+                                <Table.Header>
+                                    <Table.Row>
+                                        <Table.HeaderCell>Price</Table.HeaderCell>
+                                        <Table.HeaderCell>Amount</Table.HeaderCell>
+                                    </Table.Row>
+                                </Table.Header>
 
-                        <Table.Body>
-                        {this.state.sellSide.map(function(bid){
-                            return <Table.Row key={bid.pkey}>
-                                        <Table.Cell>{bid.price}</Table.Cell>
-                                        <Table.Cell>{bid.amount}</Table.Cell>
-                                      </Table.Row>;
-                        })}
-                        </Table.Body>
-                    </Table>
-                    Buy
-                    <Table celled>
-                        <Table.Header>
-                            <Table.Row>
-                                <Table.HeaderCell>Price</Table.HeaderCell>
-                                <Table.HeaderCell>Amount</Table.HeaderCell>
-                            </Table.Row>
-                        </Table.Header>
+                                <Table.Body>
+                                {this.state.sellSide.map(function(bid){
+                                    return <Table.Row key={bid.pkey}>
+                                                <Table.Cell>{bid.price}</Table.Cell>
+                                                <Table.Cell>{bid.amount}</Table.Cell>
+                                              </Table.Row>;
+                                })}
+                                </Table.Body>
+                            </Table>
+                            Buy
+                            <Table celled>
+                                <Table.Header>
+                                    <Table.Row>
+                                        <Table.HeaderCell>Price</Table.HeaderCell>
+                                        <Table.HeaderCell>Amount</Table.HeaderCell>
+                                    </Table.Row>
+                                </Table.Header>
 
-                        <Table.Body>
-                        {this.state.buySide.map(function(bid){
-                            return <Table.Row key={bid.pkey}>
-                                        <Table.Cell>{bid.price}</Table.Cell>
-                                        <Table.Cell>{bid.amount}</Table.Cell>
-                                      </Table.Row>;
-                        })}
-                        </Table.Body>
-                    </Table>
-                </Fragment>
+                                <Table.Body>
+                                {this.state.buySide.map(function(bid){
+                                    return <Table.Row key={bid.pkey}>
+                                                <Table.Cell>{bid.price}</Table.Cell>
+                                                <Table.Cell>{bid.amount}</Table.Cell>
+                                              </Table.Row>;
+                                })}
+                                </Table.Body>
+                            </Table>
+                        </Grid.Column>
+                    </Grid>
+                </Segment>
                 );
     }
 
