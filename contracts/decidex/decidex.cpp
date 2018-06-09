@@ -4,9 +4,14 @@ using namespace eosio;
 
 static const account_name decidex_account = N(decidex);
 
-class counter : public eosio::contract {
+class decidex : public eosio::contract {
 public:
 	using contract::contract;
+
+	decidex(account_name self)
+	: eosio::contract(self),
+	existing_values(_self, _self) {
+	}
 
 	/// @abi action
 
@@ -23,11 +28,11 @@ public:
 	/// @abi action
 
 	void set(uint32_t val) {
-		values existing_values(decidex_account, decidex_account);
 		auto itr = existing_values.begin();
-		if (itr == existing_values.end()) {
-			existing_values.emplace(decidex_account, [&val, &existing_values](auto& g) {
-				g.pkey = existing_values.available_primary_key();
+		if (itr == this->existing_values.end()) {
+			uint64_t pkey = existing_values.available_primary_key();
+			existing_values.emplace(decidex_account, [&val, &pkey](auto& g) {
+				g.pkey = pkey;
 				g.val = val;
 				print(g.pkey, " ", g.val);
 			});
@@ -41,11 +46,11 @@ public:
 private:
 
 	void modify(int32_t val) {
-		values existing_values(decidex_account, decidex_account);
 		auto itr = existing_values.begin();
 		if (itr == existing_values.end()) {
-			existing_values.emplace(decidex_account, [&val, &existing_values](auto& g) {
-				g.pkey = existing_values.available_primary_key();
+			uint64_t pkey = existing_values.available_primary_key();
+			existing_values.emplace(decidex_account, [&val, &pkey](auto& g) {
+				g.pkey = pkey;
 				g.val = val;
 				print(g.pkey, " ", g.val);
 			});
@@ -70,7 +75,8 @@ private:
 		EOSLIB_SERIALIZE(value, (pkey) (val))
 	};
 
-	typedef eosio::multi_index< decidex_account, value> values;
+	typedef eosio::multi_index< N(value), value> values;
+	values existing_values;
 };
 
-EOSIO_ABI(counter, (add) (subtract) (set))
+EOSIO_ABI(decidex, (add) (subtract) (set))
