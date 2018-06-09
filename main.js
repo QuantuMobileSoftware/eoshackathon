@@ -127,10 +127,10 @@ setInterval(function () {
 var orders = [];
 setInterval(function () {
     eos.getTableRows("true", "decidex", "decidex", "order", undefined, undefined, undefined, -1).then(result => {
-        orders = result.rows;
-        if (orders === undefined || orders.length === 0) {
+        if (result.rows === undefined || result.rows.length < orders.length) {
             return;
         }
+        orders = result.rows;
         const intervalInMicros = 1 * 60 * 1000000;
         var aggregatedOrders = [];
         var periodStart = orders[0].createdat - orders[0].createdat % intervalInMicros;
