@@ -43,16 +43,31 @@ $ docker-compose exec eosio bash
 # eosiocpp -g decidex.abi decidex.cpp
 
 $ cleos set contract decidex /contracts/decidex -p decidex
+$ cleos set abi decidex /contracts/decidex/decidex.abi
 
-$ cleos push action decidex add '[123]' -p test
-$ cleos push action decidex subtract '[123]' -p test
-$ cleos push action decidex set '[2]' -p test
-
-$ cleos get table decidex decidex value
+$ cleos push action decidex placebid '["test", 0, 15, 11]' -p test
+$ cleos get table decidex decidex bid
 {
   "rows": [{
       "pkey": 0,
-      "val": 123
+      "bidder": "test",
+      "bidType": 0,
+      "amount": 15,
+      "price": 11
+    }
+  ],
+  "more": false
+}
+
+$ cleos push action decidex match '["test"]' -p test
+$ cleos get table decidex decidex order
+{
+  "rows": [{
+      "pkey": 0,
+      "seller": "decidex",
+      "buyer": "test",
+      "amount": 15,
+      "price": 11
     }
   ],
   "more": false

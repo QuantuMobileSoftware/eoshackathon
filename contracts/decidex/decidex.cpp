@@ -3,6 +3,8 @@
 using namespace eosio;
 
 static const account_name decidex_account = N(decidex);
+const uint8_t BUY = 0;
+const uint8_t SELL = 1;
 
 class decidex : public eosio::contract {
 public:
@@ -10,42 +12,49 @@ public:
 
 	decidex(account_name self)
 	: eosio::contract(self),
-	existing_values(_self, _self) {
+	bids(_self, _self),
+	orders(_self, _self) {
 	}
 
 	/// @abi action
 
-	void add(uint32_t val) {
-		modify(val);
+	void placebid(account_name bidder, uint8_t bidType, uint32_t amount, uint32_t price) {
+		uint64_t pkey = bids.available_primary_key();
+		bids.emplace(decidex_account, [&pkey, &bidder, &bidType, &amount, &price](auto& g) {
+			g.pkey = pkey++;
+			g.bidder = bidder;
+			g.bidType = bidType;
+			g.amount = amount;
+			g.price = price;
+		});
 	}
 
 	/// @abi action
 
-	void subtract(uint32_t val) {
-		modify(-val);
-	}
-
-	/// @abi action
-
-	void set(uint32_t val) {
-		auto itr = existing_values.begin();
-		if (itr == this->existing_values.end()) {
-			uint64_t pkey = existing_values.available_primary_key();
-			existing_values.emplace(decidex_account, [&val, &pkey](auto& g) {
-				g.pkey = pkey;
-				g.val = val;
-				print(g.pkey, " ", g.val);
+	void match(account_name caller) {
+		require_auth(caller);
+		auto itr = bids.begin();
+		if (itr != bids.end()) {
+			// Generate fixture
+			uint64_t pkey = orders.available_primary_key();
+			orders.emplace(decidex_account, [&pkey, &itr](auto& g) {
+				g.pkey = pkey++;
+				if (itr->bidType == BUY) {
+					g.seller = decidex_account;
+					g.buyer = itr->bidder;
+				} else {
+					g.seller = itr->bidder;
+					g.buyer = decidex_account;
+				}
+				g.amount = itr->amount;
+				g.price = itr->price;
 			});
-		} else {
-			existing_values.modify(itr, itr->pkey, [&val](auto& g) {
-				g.val = val;
-				print(g.pkey, " ", g.val);
-			});
+			bids.erase(itr);
 		}
 	}
 private:
 
-	void modify(int32_t val) {
+	/*void modify(int32_t val) {
 		auto itr = existing_values.begin();
 		if (itr == existing_values.end()) {
 			uint64_t pkey = existing_values.available_primary_key();
@@ -61,22 +70,40 @@ private:
 				print(g.pkey, " ", g.val);
 			});
 		}
-	}
+	}*/
 
-	/// @abi table
+	/// @abi table bid i64
 
-	struct value {
+	struct bid {
 		uint64_t pkey;
-		int64_t val;
+		account_name bidder;
+		uint8_t bidType;
+		uint32_t amount;
+		uint32_t price;
 
 		uint64_t primary_key()const {
 			return pkey;
 		}
-		EOSLIB_SERIALIZE(value, (pkey) (val))
+		EOSLIB_SERIALIZE(bid, (pkey) (bidder) (bidType) (amount) (price))
 	};
+	eosio::multi_index < N(bid), bid> bids;
 
-	typedef eosio::multi_index< N(value), value> values;
-	values existing_values;
+	/// @abi table order i64
+
+	struct order {
+		uint64_t pkey;
+		account_name seller;
+		account_name buyer;
+		uint32_t amount;
+		uint32_t price;
+
+		uint64_t primary_key()const {
+			return pkey;
+		}
+		EOSLIB_SERIALIZE(order, (pkey) (seller) (buyer) (amount) (price))
+	};
+	eosio::multi_index < N(order), order> orders;
+
 };
 
-EOSIO_ABI(decidex, (add) (subtract) (set))
+EOSIO_ABI(decidex, (placebid) (match))
