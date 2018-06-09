@@ -29,6 +29,8 @@ export class Bid extends Component {
                                     <Form.Input name='price' label='Price' type='number' value={this.state.price} onChange={this.handleChange} />
                                     <Button basic color='green' onClick={this.handleClickSell}>Sell</Button>
                                     <Button basic color='red' onClick={this.handleClickBuy}>Buy</Button>
+                                    <Form.Input name='amount' label='Amount' type='number' value={this.state.amount} onChange={this.handleChange} />
+                                    <Button basic color='red' onClick={this.handleClickMarketBuy}>Market buy</Button>
                             </Form>
                         </Grid.Column>
                         <Grid.Column width={3}>
@@ -75,7 +77,6 @@ export class Bid extends Component {
     }
 
     handleChange = (e, { name, value }) => {
-        console.log(name, value);
         if (name === "amount" || name === "price") {
             value = parseInt(value);
         }
@@ -140,6 +141,31 @@ export class Bid extends Component {
                 {
                     account: 'decidex',
                     name: "placebid",
+                    authorization: [{
+                            actor: 'decidex',
+                            permission: 'active'
+                        }],
+                    data: data
+                }
+            ]
+        }).then(result => console.log(result));
+    }
+    
+    handleClickMarketBuy = () => {
+        const eos = Eos({
+            httpEndpoint: 'http://' + window.location.hostname + ':8888',
+            keyProvider: this.state.pk,
+            debug: true
+        });
+        const data = {
+            bidder: this.state.accountName,
+            amount: this.state.amount
+        };
+        eos.transaction({
+            actions: [
+                {
+                    account: 'decidex',
+                    name: "marketsell",
                     authorization: [{
                             actor: 'decidex',
                             permission: 'active'
