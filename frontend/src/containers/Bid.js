@@ -21,7 +21,7 @@ export class Bid extends Component {
         return (
                 <Segment inverted>
                     <Grid stackable>
-                        <Grid.Column width={6}>
+                        <Grid.Column width={3}>
                             <Form inverted>
                                     <Form.Input name='accountName' label='Account name' type='text' value={this.state.accountName} onChange={this.handleChange} />
                                     <Form.Input name='pk' label='pk' type='password' value={this.state.pk} onChange={this.handleChange} />
@@ -31,7 +31,7 @@ export class Bid extends Component {
                                     <Button basic color='green' onClick={this.handleClickSell}>Sell</Button>
                             </Form>
                         </Grid.Column>
-                        <Grid.Column floated='right' width={8}>
+                        <Grid.Column width={3}>
                             Ask
                             <Table celled>
                                 <Table.Header>
