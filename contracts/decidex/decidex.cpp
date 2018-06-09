@@ -20,14 +20,14 @@ public:
 
 	void placebid(account_name bidder, uint8_t bidType, uint32_t amount, uint32_t price) {
 		uint64_t pkey = bids.available_primary_key();
-		uint64_t now = getNowInMillis();
+		uint64_t now = current_time();
 		bids.emplace(decidex_account, [&pkey, &bidder, &bidType, &amount, &price, &now](auto& g) {
 			g.pkey = pkey++;
 			g.bidder = bidder;
 			g.bidType = bidType;
 			g.amount = amount;
 			g.price = price;
-			g.createdat = pkey;
+			g.createdat = now;
 		});
 	}
 
@@ -35,7 +35,7 @@ public:
 
 	void match(account_name caller) {
 		require_auth(caller);
-		uint64_t now = getNowInMillis();
+		uint64_t now = current_time();
 		while (true) {
 			// Find sell with min price
 			// Find buy bid with max price
@@ -57,7 +57,7 @@ public:
 					g.buyer = buySide->bidder;
 					g.amount = buySide->amount < sellSide->amount ? buySide->amount : sellSide->amount;
 					g.price = sellSide->price;
-					g.createdat = pkey;
+					g.createdat = now;
 				});
 				if (buySide->amount == sellSide->amount) {
 					bids.erase(buySide);
@@ -93,7 +93,7 @@ public:
 	/// @abi action
 
 	void marketsell(account_name bidder, uint32_t amount) {
-		uint64_t now = getNowInMillis();
+		uint64_t now = current_time();
 		while (amount > 0) {
 			// Find sell with min price
 			auto sellSide = bids.end();
@@ -111,7 +111,7 @@ public:
 					g.buyer = bidder;
 					g.amount = amount < sellSide->amount ? amount : sellSide->amount;
 					g.price = sellSide->price;
-					g.createdat = pkey;
+					g.createdat = now;
 				});
 				if (amount >= sellSide->amount) {
 					amount -= sellSide->amount;
@@ -131,13 +131,6 @@ public:
 
 private:
 	
-	uint64_t getNowInMillis() {
-//		timeval curTime;
-//		gettimeofday(&curTime, NULL);
-//		return curTime.tv_usec / 1000;
-		return 0;
-	}
-
 	/// @abi table bid i64
 
 	struct bid {
