@@ -8,30 +8,20 @@ services:
     volumes:
       - ./:/code
     links:
-      - nodeosd
+      - eosio
     working_dir: /code
     command: /bin/bash -c "npm install && node main.js"
-        
-  nodeosd:
-    image: eosio/eos-dev:v1.0.1
-    command: /opt/eosio/bin/nodeosd.sh -e --contracts-console --access-control-allow-origin=http://localhost:1337
-    hostname: nodeosd
+
+  eosio:
+    image: eosio/eos-dev:20180608
+    command: /bin/bash -c "nodeos -e -p eosio --plugin eosio::wallet_api_plugin --plugin eosio::wallet_plugin --plugin eosio::producer_plugin --plugin eosio::history_plugin --plugin eosio::chain_api_plugin --plugin eosio::history_api_plugin --plugin eosio::http_plugin -d /mnt/dev/data --config-dir /mnt/dev/config --http-server-address=0.0.0.0:8888 --access-control-allow-origin=* --contracts-console"
     ports:
       - 8888:8888
       - 9876:9876
     expose:
       - "8888"
     volumes:
-      - ./data/nodeos-data-volume:/opt/eosio/bin/data-dir
-      - ./data/block:/root/.local/share/eosio/nodeos/data/blocks
-
-  keosd:
-    image: eosio/eos-dev:v1.0.1
-    command: /opt/eosio/bin/keosd
-    hostname: keosd
-    links:
-      - nodeosd
-    volumes:
-      - ./data/keosd-data-volume:/opt/eosio/bin/data-dir
-      - ./contracts:/contracts
-      - ./data/eosio-wallet:/root/eosio-wallet
+      - ./data/work:/work
+      - ./data/eosio/data:/mnt/dev/data
+      - ./data/eosio/config:/mnt/dev/config
+      - ./contracts/decidex:/contracts/decidex

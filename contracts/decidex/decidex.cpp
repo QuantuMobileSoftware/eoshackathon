@@ -8,19 +8,19 @@ class counter : public eosio::contract {
 public:
 	using contract::contract;
 
-	/// @abi action 
+	/// @abi action
 
 	void add(uint32_t val) {
 		modify(val);
 	}
 
-	/// @abi action 
+	/// @abi action
 
 	void subtract(uint32_t val) {
 		modify(-val);
 	}
 
-	/// @abi action 
+	/// @abi action
 
 	void set(uint32_t val) {
 		values existing_values(decidex_account, decidex_account);
