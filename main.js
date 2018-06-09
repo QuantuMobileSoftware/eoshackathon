@@ -9,7 +9,7 @@ const webSocketServer = require('websocket').server,
         path = require('path'),
         Eos = require('eosjs');
 
-const eos = Eos({httpEndpoint: 'http://nodeosd:8888', keyProvider: '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3'});
+const eos = Eos({httpEndpoint: 'http://nodeosd:8888', keyProvider: '5JyiENJrnYr9dRy9TbxqD6yNDkpS5nD1qRHWpnCSDG97FC6A2wi'});
 
 const serverPort = parseInt(process.env.SERVER_PORT || 1337, 10);
 
@@ -81,7 +81,7 @@ wsServer.on('request', function (request) {
             eos.transaction({
                 actions: [
                     {
-                        account: 'counter.code',
+                        account: 'decidex',
                         name: parsedData.name,
                         authorization: [{
                                 actor: 'test',
