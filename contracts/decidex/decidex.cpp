@@ -20,12 +20,14 @@ public:
 
 	void placebid(account_name bidder, uint8_t bidType, uint32_t amount, uint32_t price) {
 		uint64_t pkey = bids.available_primary_key();
-		bids.emplace(decidex_account, [&pkey, &bidder, &bidType, &amount, &price](auto& g) {
+		uint64_t now = getNowInMillis();
+		bids.emplace(decidex_account, [&pkey, &bidder, &bidType, &amount, &price, &now](auto& g) {
 			g.pkey = pkey++;
 			g.bidder = bidder;
 			g.bidType = bidType;
 			g.amount = amount;
 			g.price = price;
+			g.createdat = pkey;
 		});
 	}
 
@@ -33,6 +35,7 @@ public:
 
 	void match(account_name caller) {
 		require_auth(caller);
+		uint64_t now = getNowInMillis();
 		while (true) {
 			// Find sell with min price
 			// Find buy bid with max price
@@ -48,12 +51,13 @@ public:
 			if (buySide != bids.end() && sellSide != bids.end() && buySide->price >= sellSide->price) {
 				// Match
 				uint64_t pkey = orders.available_primary_key();
-				orders.emplace(decidex_account, [&pkey, &buySide, &sellSide](auto& g) {
+				orders.emplace(decidex_account, [&pkey, &buySide, &sellSide, &now](auto& g) {
 					g.pkey = pkey;
 					g.seller = sellSide->bidder;
 					g.buyer = buySide->bidder;
 					g.amount = buySide->amount < sellSide->amount ? buySide->amount : sellSide->amount;
-					g.price = (buySide->price + sellSide->price) / 2;
+					g.price = sellSide->price;
+					g.createdat = pkey;
 				});
 				if (buySide->amount == sellSide->amount) {
 					bids.erase(buySide);
@@ -89,6 +93,7 @@ public:
 	/// @abi action
 
 	void marketsell(account_name bidder, uint32_t amount) {
+		uint64_t now = getNowInMillis();
 		while (amount > 0) {
 			// Find sell with min price
 			auto sellSide = bids.end();
@@ -100,12 +105,13 @@ public:
 			if (sellSide != bids.end()) {
 				// Match
 				uint64_t pkey = orders.available_primary_key();
-				orders.emplace(decidex_account, [&pkey, &sellSide, &bidder, &amount](auto& g) {
+				orders.emplace(decidex_account, [&pkey, &sellSide, &bidder, &amount, &now](auto& g) {
 					g.pkey = pkey;
 					g.seller = sellSide->bidder;
 					g.buyer = bidder;
 					g.amount = amount < sellSide->amount ? amount : sellSide->amount;
 					g.price = sellSide->price;
+					g.createdat = pkey;
 				});
 				if (amount >= sellSide->amount) {
 					amount -= sellSide->amount;
@@ -124,6 +130,13 @@ public:
 
 
 private:
+	
+	uint64_t getNowInMillis() {
+//		timeval curTime;
+//		gettimeofday(&curTime, NULL);
+//		return curTime.tv_usec / 1000;
+		return 0;
+	}
 
 	/// @abi table bid i64
 
@@ -133,11 +146,12 @@ private:
 		uint8_t bidType;
 		uint32_t amount;
 		uint32_t price;
+		uint64_t createdat;
 
 		uint64_t primary_key()const {
 			return pkey;
 		}
-		EOSLIB_SERIALIZE(bid, (pkey) (bidder) (bidType) (amount) (price))
+		EOSLIB_SERIALIZE(bid, (pkey) (bidder) (bidType) (amount) (price) (createdat))
 	};
 	eosio::multi_index < N(bid), bid> bids;
 
@@ -149,11 +163,12 @@ private:
 		account_name buyer;
 		uint32_t amount;
 		uint32_t price;
+		uint64_t createdat;
 
 		uint64_t primary_key()const {
 			return pkey;
 		}
-		EOSLIB_SERIALIZE(order, (pkey) (seller) (buyer) (amount) (price))
+		EOSLIB_SERIALIZE(order, (pkey) (seller) (buyer) (amount) (price) (createdat))
 	};
 	eosio::multi_index < N(order), order> orders;
 

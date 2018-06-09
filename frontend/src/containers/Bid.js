@@ -1,6 +1,8 @@
-import React, {Component, Fragment} from 'react';
+import React, {Component} from 'react';
 import Eos from "eosjs";
-import { Segment, Button, Form, Icon, Label, Menu, Table, Grid } from 'semantic-ui-react';
+import { Segment, Button, Form, Grid } from 'semantic-ui-react';
+import Chart from "../components/Chart";
+import BidsTable from "../components/BidsTable";
 
 export class Bid extends Component {
     constructor(props) {
@@ -13,11 +15,23 @@ export class Bid extends Component {
             sellSide: [],
             buySide: []
         };
+        
+        this.state.orders = [
+            {
+                date: new Date(),
+                open: 9,
+                high: 15,
+                low: 6,
+                close: 14,
+                volume: 32
+            }
+        ];
 
         this.handleInputChange = this.handleInputChange.bind(this);
     }
 
     render() {
+        this.ordersChart = <Chart />;
         return (
                 <Segment inverted>
                     <Grid stackable>
@@ -34,42 +48,10 @@ export class Bid extends Component {
                             </Form>
                         </Grid.Column>
                         <Grid.Column width={3}>
-                            Ask
-                            <Table celled>
-                                <Table.Header>
-                                    <Table.Row>
-                                        <Table.HeaderCell>Price</Table.HeaderCell>
-                                        <Table.HeaderCell>Amount</Table.HeaderCell>
-                                    </Table.Row>
-                                </Table.Header>
-
-                                <Table.Body>
-                                {this.state.sellSide.map(function(bid){
-                                    return <Table.Row key={bid.pkey}>
-                                                <Table.Cell>{bid.price}</Table.Cell>
-                                                <Table.Cell>{bid.amount}</Table.Cell>
-                                              </Table.Row>;
-                                })}
-                                </Table.Body>
-                            </Table>
-                            Buy
-                            <Table celled>
-                                <Table.Header>
-                                    <Table.Row>
-                                        <Table.HeaderCell>Price</Table.HeaderCell>
-                                        <Table.HeaderCell>Amount</Table.HeaderCell>
-                                    </Table.Row>
-                                </Table.Header>
-
-                                <Table.Body>
-                                {this.state.buySide.map(function(bid){
-                                    return <Table.Row key={bid.pkey}>
-                                                <Table.Cell>{bid.price}</Table.Cell>
-                                                <Table.Cell>{bid.amount}</Table.Cell>
-                                              </Table.Row>;
-                                })}
-                                </Table.Body>
-                            </Table>
+                            <BidsTable sellSide={this.state.sellSide} buySide={this.state.buySide} />
+                        </Grid.Column>
+                        <Grid.Column width={8}>
+                            {this.ordersChart}
                         </Grid.Column>
                     </Grid>
                 </Segment>
@@ -202,7 +184,8 @@ export class Bid extends Component {
                 self.setState({buySide: buySide, sellSide: sellSide});
             }
             if (message.orders !== undefined) {
-                self.setState({orders: message.orders});
+                
+//                self.setState({orders: message.orders});
             }
         };
         controlWebsocket.onclose = function () {
