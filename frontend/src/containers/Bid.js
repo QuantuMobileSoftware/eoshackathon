@@ -178,9 +178,11 @@ export class Bid extends Component {
                 buySide.sort(function (a, b) {
                     return b.price - a.price;
                 });
+                buySide = buySide.slice(0, Math.min(buySide.length, 5));
                 sellSide.sort(function (a, b) {
                     return b.price - a.price;
                 });
+                sellSide = sellSide.slice(Math.max(sellSide.length - 5, 1));
                 self.setState({buySide: buySide, sellSide: sellSide});
             }
             if (message.orders !== undefined) {
