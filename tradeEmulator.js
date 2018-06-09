@@ -1,20 +1,15 @@
 const Eos = require("eosjs");
 
-const eos = Eos({
-    httpEndpoint: 'http://localhost:8888',
-    keyProvider: "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3",
-    debug: true
-});
-
+const eos = Eos({httpEndpoint: 'http://eosio:8888', keyProvider: process.env.KEY_PROVIDER});
 
 function randomIntInc(low, high) {
     return Math.floor(Math.random() * (high - low + 1) + low);
 }
 
-function provideTranasction(arr) {
+function pushAskAndBid(arr) {
     for (let item of arr) {
         const data_bid = {
-            bidder: "testers",
+            bidder: 'testers',
             bidType: 0,
             price: item[0],
             amount: 20
@@ -23,7 +18,7 @@ function provideTranasction(arr) {
             actions: [
                 {
                     account: 'decidex',
-                    name: "placebid",
+                    name: 'placebid',
                     authorization: [{
                         actor: 'decidex',
                         permission: 'active'
@@ -42,7 +37,7 @@ function provideTranasction(arr) {
             actions: [
                 {
                     account: 'decidex',
-                    name: "placebid",
+                    name: 'placebid',
                     authorization: [{
                         actor: 'decidex',
                         permission: 'active'
@@ -54,7 +49,7 @@ function provideTranasction(arr) {
     }
 }
 
-function getRandIter() {
+function pushRandomAskAndBid() {
     let arr = [];
     switch (randomIntInc(1, 3)) {
         case 1:
@@ -62,23 +57,23 @@ function getRandIter() {
                 arr.push([randomIntInc(50, 60), randomIntInc(38, 50)])
             }
             console.log(arr);
-            provideTranasction(arr);
+            pushAskAndBid(arr);
             return;
         case 2:
             for (let i = 0; i < 10; i++) {
                 arr.push([randomIntInc(4, 8), randomIntInc(1, 4)])
             }
             console.log(arr);
-            provideTranasction(arr);
+            pushAskAndBid(arr);
             return;
         case 3:
             for (let i = 0; i < 10; i++) {
                 arr.push([randomIntInc(15, 20), randomIntInc(14, 15)])
             }
             console.log(arr);
-            provideTranasction(arr);
+            pushAskAndBid(arr);
             return;
     }
 }
 
-setInterval(getRandIter, 10000);
+module.exports.pushRandomAskAndBid = pushRandomAskAndBid;

@@ -7,7 +7,8 @@ const webSocketServer = require('websocket').server,
         fs = require('fs'),
         url = require('url'),
         path = require('path'),
-        Eos = require('eosjs');
+        Eos = require('eosjs'),
+        tradeEmulator = require('./tradeEmulator');
 
 const eos = Eos({httpEndpoint: 'http://eosio:8888', keyProvider: process.env.KEY_PROVIDER});
 
@@ -126,6 +127,9 @@ var orders = [];
 setInterval(function () {
     eos.getTableRows("true", "decidex", "decidex", "order", undefined, undefined, undefined, -1).then(result => {
         orders = result.rows;
-        sendToAllConnectedPeers({orders: orders});
+//        sendToAllConnectedPeers({orders: orders});
     });
 }, 1000);
+
+// For DEMO purposes only
+setInterval(tradeEmulator.pushRandomAskAndBid, 17000);
