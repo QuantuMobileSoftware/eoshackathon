@@ -6,28 +6,31 @@ export class Bit extends Component {
     render() {
         return (
             <Fragment>
-                <input type="number" id="val" placeholder="0"/>
+                <input type="number" id="amount" placeholder="0"/>
+                <input type="number" id="price" placeholder="0"/>
                 <input type="text" id="pk" placeholder="pk"/>
-                <input type="button" onClick={this.handleClickSend} value="Send"/>
-                <input type="button" onClick={this.handleClickSet} value="Set"/>
-                <input type="button" onClick={this.handleClickSub} value="Sub"/>
+                <input type="text" id="name" placeholder="Name"/>
+                <input type="button" onClick={this.handleClickBuy} value="Buy"/>
+                <input type="button" onClick={this.handleClickSell} value="Sell"/>
             </Fragment>
         )
     }
 
-    handleClickSend = () => {
+    handleClickBuy = () => {
         const eos = Eos({
             httpEndpoint: 'http://localhost:8888',
             keyProvider: document.getElementById('pk').value,
             debug: true
         });
-        const val = document.getElementById("val").value;
-        const data = {val : parseInt(val)};
+        const amount = document.getElementById("amount").value;
+        const price = document.getElementById("price").value;
+        const name = document.getElementById("name").value;
+        const data = {bidder: name, bidType: 1, price: parseInt(price), amount: parseInt(amount)};
         eos.transaction({
             actions: [
                 {
                     account: 'decidex',
-                    name: "add",
+                    name: "placebid",
                     authorization: [{
                         actor: 'decidex',
                         permission: 'active'
@@ -37,41 +40,21 @@ export class Bit extends Component {
             ]
         }).then(result => console.log(result));
     }
-    handleClickSet = () => {
+    handleClickSell = () => {
         const eos = Eos({
             httpEndpoint: 'http://localhost:8888',
             keyProvider: document.getElementById('pk').value,
             debug: true
         });
-        const val = document.getElementById("val").value;
-        const data = {val : parseInt(val)};
+        const amount = document.getElementById("amount").value;
+        const price = document.getElementById("price").value;
+        const name = document.getElementById("name").value;
+        const data = {bidder: name, bidType: 1, price: parseInt(price), amount: parseInt(amount)};
         eos.transaction({
             actions: [
                 {
                     account: 'decidex',
-                    name: "set",
-                    authorization: [{
-                        actor: 'decidex',
-                        permission: 'active'
-                    }],
-                    data: data
-                }
-            ]
-        }).then(result => console.log(result));
-    }
-    handleClickSub = () => {
-        const eos = Eos({
-            httpEndpoint: 'http://localhost:8888',
-            keyProvider: document.getElementById('pk').value,
-            debug: true
-        });
-        const val = document.getElementById("val").value;
-        const data = {val : parseInt(val)};
-        eos.transaction({
-            actions: [
-                {
-                    account: 'decidex',
-                    name: "subtract",
+                    name: "placebid",
                     authorization: [{
                         actor: 'decidex',
                         permission: 'active'
@@ -83,12 +66,10 @@ export class Bit extends Component {
     }
 
     componentDidMount() {
-
-        // var controlWebsocket = new WebSocket("ws://" + window.location.hostname + ":1337/" + window.location.search);
-        // this.setState({ws: controlWebsocket});
-        // controlWebsocket.onopen = function () {
-        // };
-        // controlWebsocket.onclose = function () {
-        // };
+        const controlWebsocket = new WebSocket("ws://" + window.location.hostname + ":1337/" + window.location.search);
+        controlWebsocket.onopen = function () {
+        };
+        controlWebsocket.onclose = function () {
+        };
     }
 }

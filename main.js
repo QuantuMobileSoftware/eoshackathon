@@ -1,86 +1,30 @@
-"use strict";
+const WebSocket = require('ws');
+const Eos = require("eosjs");
 
-process.title = 'eoserver';
+const wss = new WebSocket.Server({port: 8080, origin: '*'});
+const eos = Eos({
+    httpEndpoint: 'http://eosio:8888',
+    keyProvider: "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3",
+    debug: true
+});
 
-const webSocketServer = require('websocket').server,
-        http = require('http'),
-        fs = require('fs'),
-        url = require('url'),
-        path = require('path'),
-        Eos = require('eosjs');
-
-const eos = Eos({httpEndpoint: 'http://nodeosd:8888', keyProvider: '5JyiENJrnYr9dRy9TbxqD6yNDkpS5nD1qRHWpnCSDG97FC6A2wi'});
-
-const serverPort = parseInt(process.env.SERVER_PORT || 1337, 10);
-
-var serveStatic = function (request, response) {
-    const parsedUrl = url.parse(request.url, true);
-    let pathname = `./public${parsedUrl.pathname}`;
-    var ext = path.parse(pathname).ext;
-    const map = {
-        '.ico': 'image/x-icon',
-        '.html': 'text/html',
-        '.js': 'text/javascript',
-        '.json': 'application/json',
-        '.css': 'text/css',
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.wav': 'audio/wav',
-        '.mp3': 'audio/mpeg',
-        '.svg': 'image/svg+xml',
-        '.pdf': 'application/pdf',
-        '.doc': 'application/msword'
+wss.on('connection', function connection(ws) {
+    const getBids = () => {
+        const rows = eos.getTableRows("true", "decidex", "decidex", "bid");
+        ws.send(rows)
     };
 
-    fs.exists(pathname, function (exist) {
-        if (!exist) {
-            response.statusCode = 404;
-            response.end(`File ${pathname} not found!`);
-            return;
-        }
+    const getOrders = () => {
+        const rows = eos.getTableRows("true", "decidex", "decidex", "order");
+        ws.send(rows)
+    };
 
-        if (fs.statSync(pathname).isDirectory()) {
-            ext = '.html';
-            pathname += '/index' + ext;
-        }
+    setInterval(getBids, 5000);
+    setInterval(getOrders, 5000);
 
-        fs.readFile(pathname, function (err, data) {
-            if (err) {
-                response.statusCode = 500;
-                response.end(`Error getting the file: ${err}.`);
-            } else {
-                response.setHeader('Content-type', map[ext] || 'text/plain');
-                response.end(data);
-            }
-        });
-    });
-};
-
-var server = http.createServer(function (request, response) {
-    console.log((new Date()), `${request.method} ${request.url}`);
-    serveStatic(request, response);
-});
-
-server.listen(serverPort, function () {
-    console.log((new Date()), 'Server is listening on port', serverPort);
-});
-
-var wsServer = new webSocketServer({
-    httpServer: server
-});
-
-wsServer.on('request', function (request) {
-    console.log((new Date()), 'Connection from origin', request.origin);
-    const parsedUrl = url.parse(request.httpRequest.url, true);
-    const connection = request.accept(null, request.origin);
-    console.log((new Date()), 'Connection accepted', parsedUrl.query);
-    connection.on('message', function (message) {
-        if (message.type === 'utf8') {
-            const parsedData = JSON.parse(message.utf8Data);
-            console.log((new Date()), 'Got message', parsedData);
-        }
-    });
-    connection.on('close', function () {
-        console.log((new Date()), 'Peer disconnected');
-    });
+    // ws.on('message', function incoming(message) {
+    //     console.log('received: %s', message);
+    // });
+    //
+    // ws.send('something');
 });

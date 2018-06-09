@@ -6,5 +6,9 @@ const eos = Eos({
     debug: true
 });
 
-console.log(eos.getTableRows("true", "decidex", "decidex", "value"));
+(eos.getTableRows("true", "decidex", "decidex", "bid"));
+
+function getBids() {
+    (eos.getTableRows("true", "decidex", "decidex", "bid"));
+}
 
