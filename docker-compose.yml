@@ -14,7 +14,7 @@ services:
         
   nodeosd:
     image: eosio/eos-dev:v1.0.1
-    command: /opt/eosio/bin/nodeosd.sh -e --contracts-console
+    command: /opt/eosio/bin/nodeosd.sh -e --contracts-console --access-control-allow-origin=http://localhost:1337
     hostname: nodeosd
     ports:
       - 8888:8888
@@ -23,6 +23,7 @@ services:
       - "8888"
     volumes:
       - ./data/nodeos-data-volume:/opt/eosio/bin/data-dir
+      - ./data/block:/root/.local/share/eosio/nodeos/data/blocks
 
   keosd:
     image: eosio/eos-dev:v1.0.1

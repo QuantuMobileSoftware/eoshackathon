@@ -78,19 +78,6 @@ wsServer.on('request', function (request) {
         if (message.type === 'utf8') {
             const parsedData = JSON.parse(message.utf8Data);
             console.log((new Date()), 'Got message', parsedData);
-            eos.transaction({
-                actions: [
-                    {
-                        account: 'decidex',
-                        name: parsedData.name,
-                        authorization: [{
-                                actor: 'test',
-                                permission: 'active'
-                            }],
-                        data: parsedData.data
-                    }
-                ]
-            }).then(result => console.log(result));
         }
     });
     connection.on('close', function () {

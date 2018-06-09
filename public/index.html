@@ -4,6 +4,7 @@
 		<title>Simple counter</title>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="eos.js"></script>
 	</head>
 	<body>
 		<div>Counter value:</div><div id="result"></div>
@@ -12,21 +13,41 @@
 		<input type="button" value="Subtract" id="subtractButton" />
 		<input type="button" value="Set" id="setButton" />
 		<script>
-			function pushAction(name) {
-				controlWebsocket.send(JSON.stringify({name: name, data: {val: parseInt(document.getElementById('val').value)}}));
-			}
-			
+                        var eos = Eos({
+                            httpEndpoint: 'http://localhost:8888',
+                            keyProvider: '5JyiENJrnYr9dRy9TbxqD6yNDkpS5nD1qRHWpnCSDG97FC6A2wi',
+                            debug: true
+                        });
+
+                        function pushAction(name) {
+                            var data = {val: parseInt(document.getElementById('val').value)};
+                            eos.transaction({
+                                actions: [
+                                    {
+                                        account: 'decidex',
+                                        name: name,
+                                        authorization: [{
+                                                actor: 'test',
+                                                permission: 'active'
+                                            }],
+                                        data: data
+                                    }
+                                ]
+                            }).then(result => console.log(result));
+                        }
+
+                        document.getElementById("addButton").addEventListener("click", function () {
+                            pushAction('add');
+                        });
+                        document.getElementById("subtractButton").addEventListener("click", function () {
+                            pushAction('subtract');
+                        });
+                        document.getElementById("setButton").addEventListener("click", function () {
+                            pushAction('set');
+                        });
+
                         var controlWebsocket = new WebSocket("ws://" + window.location.hostname + ":1337/" + window.location.search);
                         controlWebsocket.onopen = function () {
-				document.getElementById("addButton").addEventListener("click", function () {
-					pushAction('add');
-				});
-				document.getElementById("subtractButton").addEventListener("click", function () {
-					pushAction('subtract');
-				});
-				document.getElementById("setButton").addEventListener("click", function () {
-					pushAction('set');
-				});
                         };
                         controlWebsocket.onclose = function () {
                         };
