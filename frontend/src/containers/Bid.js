@@ -1,5 +1,6 @@
 import React, {Component, Fragment} from 'react';
 import Eos from "eosjs";
+import { Segment, Button, Form, Icon, Label, Menu, Table } from 'semantic-ui-react';
 
 export class Bid extends Component {
     constructor(props) {
@@ -8,7 +9,9 @@ export class Bid extends Component {
             amount: 0,
             price: 0,
             pk: "",
-            accountName: ""
+            accountName: "",
+            sellSide: [],
+            buySide: []
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -17,21 +20,69 @@ export class Bid extends Component {
     render() {
         return (
                 <Fragment>
-                        <input type="number" name="amount" value={this.state.amount} onChange={this.handleInputChange} />
-                        <input type="number" name="price" value={this.state.price} onChange={this.handleInputChange} />
-                        <input type="text" name="pk" placeholder="pk" value={this.state.pk} onChange={this.handleInputChange} />
-                        <input type="text" name="accountName" placeholder="Account name" value={this.state.accountName} onChange={this.handleInputChange} />
-                        <input type="button" onClick={this.handleClickBuy} value="Buy"/>
-                        <input type="button" onClick={this.handleClickSell} value="Sell"/>
+                    <Segment inverted>
+                        <Form inverted>
+                                <Form.Input name='accountName' label='Account name' type='text' value={this.state.accountName} onChange={this.handleChange} />
+                                <Form.Input name='pk' label='pk' type='password' value={this.state.pk} onChange={this.handleChange} />
+                                <Form.Input name='amount' label='Amount' type='number' value={this.state.amount} onChange={this.handleChange} />
+                                <Form.Input name='price' label='Price' type='number' value={this.state.price} onChange={this.handleChange} />
+                                <Button basic color='red' onClick={this.handleClickBuy}>Buy</Button>
+                                <Button basic color='green' onClick={this.handleClickSell}>Sell</Button>
+                        </Form>
+                    </Segment>
+                    Ask
+                    <Table celled>
+                        <Table.Header>
+                            <Table.Row>
+                                <Table.HeaderCell>Price</Table.HeaderCell>
+                                <Table.HeaderCell>Amount</Table.HeaderCell>
+                            </Table.Row>
+                        </Table.Header>
+
+                        <Table.Body>
+                        {this.state.sellSide.map(function(bid){
+                            return <Table.Row key={bid.pkey}>
+                                        <Table.Cell>{bid.price}</Table.Cell>
+                                        <Table.Cell>{bid.amount}</Table.Cell>
+                                      </Table.Row>;
+                        })}
+                        </Table.Body>
+                    </Table>
+                    Buy
+                    <Table celled>
+                        <Table.Header>
+                            <Table.Row>
+                                <Table.HeaderCell>Price</Table.HeaderCell>
+                                <Table.HeaderCell>Amount</Table.HeaderCell>
+                            </Table.Row>
+                        </Table.Header>
+
+                        <Table.Body>
+                        {this.state.buySide.map(function(bid){
+                            return <Table.Row key={bid.pkey}>
+                                        <Table.Cell>{bid.price}</Table.Cell>
+                                        <Table.Cell>{bid.amount}</Table.Cell>
+                                      </Table.Row>;
+                        })}
+                        </Table.Body>
+                    </Table>
                 </Fragment>
                 );
+    }
+
+    handleChange = (e, { name, value }) => {
+        console.log(name, value);
+        if (name === "amount" || name === "price") {
+            value = parseInt(value);
+        }
+        this.setState({[name]: value});
     }
 
     handleInputChange = (event) => {
         const target = event.target;
         var value = target.type === 'checkbox' ? target.checked : target.value;
         const name = target.name;
-        
+
         if (name === "amount" || name === "price") {
             value = parseInt(value);
         }
@@ -102,7 +153,27 @@ export class Bid extends Component {
         };
         controlWebsocket.onmessage = function (evt) {
             var message = JSON.parse(evt.data);
-            console.log("controlWebsocket", message);
+            if (message.bids !== undefined) {
+                var buySide = [];
+                var sellSide = [];
+                message.bids.forEach(x => {
+                    if (x.bidType === 0) {
+                        buySide.push(x);
+                    } else {
+                        sellSide.push(x);
+                    }
+                });
+                buySide.sort(function (a, b) {
+                    return b.price - a.price;
+                });
+                sellSide.sort(function (a, b) {
+                    return a.price - b.price;
+                });
+                self.setState({buySide: buySide, sellSide: sellSide});
+            }
+            if (message.orders !== undefined) {
+                self.setState({orders: message.orders});
+            }
         };
         controlWebsocket.onclose = function () {
         };
