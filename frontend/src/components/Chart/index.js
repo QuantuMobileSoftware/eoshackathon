@@ -121,7 +121,7 @@ export default class Chart extends Component {
 
         legend.append('text')
                 .attr('class', 'chart__symbol')
-                .text('NASDAQ: AAPL')
+                .text('DECIDEX: EOS')
 
         var rangeSelection = legend
                 .append('g')
