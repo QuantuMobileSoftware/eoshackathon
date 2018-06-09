@@ -1,10 +1,11 @@
 {
-	"name": "TestEosjs",
+	"name": "eoshackathondecidex",
 	"version": "1.0.0",
 	"keywords": [
-		"server"
+		"eoshackathon",
+		"decidex"
 	],
-	"author": "adolgarev",
+	"author": "quantumobile.com",
 	"contributors": [],
 	"dependencies": {
 		"eosjs": "^14.1.0",
