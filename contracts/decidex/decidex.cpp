@@ -86,6 +86,43 @@ public:
 		}
 	}
 
+	/// @abi action
+
+	void marketsell(account_name bidder, uint32_t amount) {
+		while (amount > 0) {
+			// Find sell with min price
+			auto sellSide = bids.end();
+			for (auto itr = bids.begin(); itr != bids.end(); itr++) {
+				if (itr->bidType == SELL && (sellSide == bids.end() || sellSide->price > itr->price)) {
+					sellSide = itr;
+				}
+			}
+			if (sellSide != bids.end()) {
+				// Match
+				uint64_t pkey = orders.available_primary_key();
+				orders.emplace(decidex_account, [&pkey, &sellSide, &bidder, &amount](auto& g) {
+					g.pkey = pkey;
+					g.seller = sellSide->bidder;
+					g.buyer = bidder;
+					g.amount = amount < sellSide->amount ? amount : sellSide->amount;
+					g.price = sellSide->price;
+				});
+				if (amount >= sellSide->amount) {
+					amount -= sellSide->amount;
+					bids.erase(sellSide);
+				} else {
+					bids.modify(sellSide, decidex_account, [&amount](auto& g) {
+						g.amount -= amount;
+					});
+					amount = 0;
+				}
+			} else {
+				break;
+			}
+		}
+	}
+
+
 private:
 
 	/// @abi table bid i64
@@ -122,4 +159,4 @@ private:
 
 };
 
-EOSIO_ABI(decidex, (placebid) (match) (clear))
+EOSIO_ABI(decidex, (placebid) (marketsell) (match) (clear))
