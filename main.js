@@ -69,10 +69,14 @@ var wsServer = new webSocketServer({
     httpServer: server
 });
 
+var lastConnectionNumber = 0;
+var activeConnections = {};
 wsServer.on('request', function (request) {
     console.log((new Date()), 'Connection from origin', request.origin);
     const parsedUrl = url.parse(request.httpRequest.url, true);
     const connection = request.accept(null, request.origin);
+    var connectionNumber = lastConnectionNumber++;
+    activeConnections[connectionNumber] = connection;
     console.log((new Date()), 'Connection accepted', parsedUrl.query);
     connection.on('message', function (message) {
         if (message.type === 'utf8') {
@@ -82,6 +86,7 @@ wsServer.on('request', function (request) {
     });
     connection.on('close', function () {
         console.log((new Date()), 'Peer disconnected');
+        delete activeConnections[connectionNumber];
     });
 });
 
@@ -102,3 +107,25 @@ setInterval(function () {
         ]
     }).then(result => console.log(result));
 }, 5000);
+
+function sendToAllConnectedPeers(message) {
+    Object.values(activeConnections).forEach(function (connection) {
+        connection.sendUTF(JSON.stringify(message));
+    });
+}
+
+var bids = [];
+setInterval(function () {
+    eos.getTableRows("true", "decidex", "decidex", "bid").then(result => {
+        bids = result.rows;
+        sendToAllConnectedPeers({bids: bids});
+    });
+}, 1000);
+
+var orders = [];
+setInterval(function () {
+    eos.getTableRows("true", "decidex", "decidex", "order").then(result => {
+        orders = result.rows;
+        sendToAllConnectedPeers({orders: orders});
+    });
+}, 1000);
