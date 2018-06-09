@@ -27,8 +27,8 @@ export class Bid extends Component {
                                     <Form.Input name='pk' label='pk' type='password' value={this.state.pk} onChange={this.handleChange} />
                                     <Form.Input name='amount' label='Amount' type='number' value={this.state.amount} onChange={this.handleChange} />
                                     <Form.Input name='price' label='Price' type='number' value={this.state.price} onChange={this.handleChange} />
-                                    <Button basic color='red' onClick={this.handleClickBuy}>Buy</Button>
                                     <Button basic color='green' onClick={this.handleClickSell}>Sell</Button>
+                                    <Button basic color='red' onClick={this.handleClickBuy}>Buy</Button>
                             </Form>
                         </Grid.Column>
                         <Grid.Column width={3}>
@@ -171,7 +171,7 @@ export class Bid extends Component {
                     return b.price - a.price;
                 });
                 sellSide.sort(function (a, b) {
-                    return a.price - b.price;
+                    return b.price - a.price;
                 });
                 self.setState({buySide: buySide, sellSide: sellSide});
             }
