@@ -59,22 +59,22 @@ public:
 					bids.erase(buySide);
 					bids.erase(sellSide);
 				} else if (buySide->amount < sellSide->amount) {
-					bids.erase(buySide);
-					bids.modify(sellSide, sellSide->pkey, [&buySide](auto& g) {
+					bids.modify(sellSide, decidex_account, [&buySide](auto& g) {
 						g.amount -= buySide->amount;
 					});
+					bids.erase(buySide);
 				} else {
-					bids.erase(sellSide);
-					bids.modify(buySide, buySide->pkey, [&sellSide](auto& g) {
+					bids.modify(buySide, decidex_account, [&sellSide](auto& g) {
 						g.amount -= sellSide->amount;
 					});
+					bids.erase(sellSide);
 				}
 			} else {
 				break;
 			}
 		}
 	}
-	
+
 	/// @abi action
 
 	void clear(account_name caller) {
@@ -85,7 +85,7 @@ public:
 			orders.erase(itr);
 		}
 	}
-	
+
 private:
 
 	/// @abi table bid i64
