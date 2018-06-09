@@ -116,7 +116,7 @@ function sendToAllConnectedPeers(message) {
 
 var bids = [];
 setInterval(function () {
-    eos.getTableRows("true", "decidex", "decidex", "bid").then(result => {
+    eos.getTableRows("true", "decidex", "decidex", "bid", undefined, undefined, undefined, -1).then(result => {
         bids = result.rows;
         sendToAllConnectedPeers({bids: bids});
     });
@@ -124,7 +124,7 @@ setInterval(function () {
 
 var orders = [];
 setInterval(function () {
-    eos.getTableRows("true", "decidex", "decidex", "order").then(result => {
+    eos.getTableRows("true", "decidex", "decidex", "order", undefined, undefined, undefined, -1).then(result => {
         orders = result.rows;
         sendToAllConnectedPeers({orders: orders});
     });
