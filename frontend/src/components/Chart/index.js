@@ -27,7 +27,11 @@ export default class Chart extends Component {
                 height = 283 - margin.top - margin.bottom,
                 height2 = 283 - margin2.top - margin2.bottom;
 
-        var parseDate = d3.time.format('%d/%m/%Y').parse,
+        var parseDate = function (utcSeconds) {
+            var d = new Date(0);
+            d.setUTCSeconds(utcSeconds);
+            return d;
+        },
                 bisectDate = d3.bisector(function (d) {
                     return d.date;
                 }).left,
@@ -128,7 +132,7 @@ export default class Chart extends Component {
                 .attr('class', 'chart__range-selection')
                 .attr('transform', 'translate(110, 0)');
 
-        d3.csv('/aapl.csv', type, function (err, data) {
+        d3.csv('http://' + window.location.hostname + ':1337/orders.csv', type, function (err, data) {
             var brush = d3.svg.brush()
                     .x(x2)
                     .on('brush', brushed);

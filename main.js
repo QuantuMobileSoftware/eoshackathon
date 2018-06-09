@@ -15,8 +15,9 @@ const eos = Eos({httpEndpoint: 'http://eosio:8888', keyProvider: process.env.KEY
 const serverPort = parseInt(process.env.SERVER_PORT || 1337, 10);
 
 var serveStatic = function (request, response) {
+    response.setHeader('Access-Control-Allow-Origin', '*');
     const parsedUrl = url.parse(request.url, true);
-    let pathname = `./public${parsedUrl.pathname}`;
+    let pathname = `./${parsedUrl.pathname}`;
     var ext = path.parse(pathname).ext;
     const map = {
         '.ico': 'image/x-icon',
@@ -127,6 +128,52 @@ var orders = [];
 setInterval(function () {
     eos.getTableRows("true", "decidex", "decidex", "order", undefined, undefined, undefined, -1).then(result => {
         orders = result.rows;
+        if (orders === undefined || orders.length === 0) {
+            return;
+        }
+        const intervalInMicros = 1 * 60 * 1000000;
+        var aggregatedOrders = [];
+        var periodStart = orders[0].createdat - orders[0].createdat % intervalInMicros;
+        var periodOrders = [];
+        orders.forEach((x) => {
+            if (periodStart + intervalInMicros >= x.createdat) {
+                periodOrders.push(x);
+            } else {
+                if (periodOrders.length > 0) {
+                    aggregatedOrders.push({
+                        date: periodStart,
+                        volume: periodOrders.reduce((accumulator, currentValue) => accumulator + currentValue.amount, 0),
+                        close: periodOrders.reduce((accumulator, currentValue) => currentValue.price, 0),
+                        average: periodOrders.reduce((accumulator, currentValue) => accumulator + currentValue.price, 0) / periodOrders.length
+                    });
+                }
+                periodStart = x.createdat - x.createdat % intervalInMicros;
+                periodOrders = [];
+            }
+        });
+        if (periodOrders.length > 0) {
+            aggregatedOrders.push({
+                date: periodStart,
+                volume: periodOrders.reduce((accumulator, currentValue) => accumulator + currentValue.amount, 0),
+                close: periodOrders.reduce((accumulator, currentValue) => currentValue.price, 0),
+                average: periodOrders.reduce((accumulator, currentValue) => accumulator + currentValue.price, 0) / periodOrders.length
+            });
+        }
+        periodOrders = [];
+        var data = aggregatedOrders.map((x) => {
+            return `${x.date/1000000},${x.volume},${x.close},${x.average}`;
+        });
+        data.unshift('Date,Volume,Close,Average');
+        fs.writeFile('orders.csv.part', data.join('\n'), function (err) {
+            if (err) {
+                return console.log('write error: ' + err);
+            }
+            fs.rename('orders.csv.part', 'orders.csv', function (err) {
+                if (err) {
+                    return console.log('rename error: ' + err);
+                }
+            });
+        });
 //        sendToAllConnectedPeers({orders: orders});
     });
 }, 1000);
