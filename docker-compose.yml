@@ -11,6 +11,8 @@ services:
       - eosio
     working_dir: /code
     command: /bin/bash -c "npm install && node main.js"
+    environment:
+      - KEY_PROVIDER=5Ht9SziuuAFjNLs21acJPaT2Zgowjb6LodhGpCkUVHC5yYmzXWE
 
   eosio:
     image: eosio/eos-dev:20180608

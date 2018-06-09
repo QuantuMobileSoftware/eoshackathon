@@ -9,7 +9,7 @@ const webSocketServer = require('websocket').server,
         path = require('path'),
         Eos = require('eosjs');
 
-const eos = Eos({httpEndpoint: 'http://nodeosd:8888', keyProvider: '5JyiENJrnYr9dRy9TbxqD6yNDkpS5nD1qRHWpnCSDG97FC6A2wi'});
+const eos = Eos({httpEndpoint: 'http://eosio:8888', keyProvider: process.env.KEY_PROVIDER});
 
 const serverPort = parseInt(process.env.SERVER_PORT || 1337, 10);
 
@@ -84,3 +84,21 @@ wsServer.on('request', function (request) {
         console.log((new Date()), 'Peer disconnected');
     });
 });
+
+setInterval(function () {
+    eos.transaction({
+        actions: [
+            {
+                account: 'decidex',
+                name: 'match',
+                authorization: [{
+                        actor: 'decidex',
+                        permission: 'active'
+                    }],
+                data: {
+                    caller: 'decidex'
+                }
+            }
+        ]
+    }).then(result => console.log(result));
+}, 5000);
