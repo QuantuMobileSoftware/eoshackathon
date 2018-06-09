@@ -53,21 +53,21 @@ function pushRandomAskAndBid() {
     let arr = [];
     switch (randomIntInc(1, 3)) {
         case 1:
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 3; i++) {
                 arr.push([randomIntInc(50, 60), randomIntInc(38, 50)])
             }
             console.log(arr);
             pushAskAndBid(arr);
             return;
         case 2:
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 3; i++) {
                 arr.push([randomIntInc(4, 8), randomIntInc(1, 4)])
             }
             console.log(arr);
             pushAskAndBid(arr);
             return;
         case 3:
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 3; i++) {
                 arr.push([randomIntInc(15, 20), randomIntInc(14, 15)])
             }
             console.log(arr);

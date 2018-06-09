@@ -35,7 +35,7 @@ export class Bid extends Component {
         return (
                 <Segment inverted>
                     <Grid stackable>
-                        <Grid.Column width={3}>
+                        <Grid.Column width={4}>
                             <Form inverted>
                                     <Form.Input name='accountName' label='Account name' type='text' value={this.state.accountName} onChange={this.handleChange} />
                                     <Form.Input name='pk' label='pk' type='password' value={this.state.pk} onChange={this.handleChange} />
@@ -44,6 +44,7 @@ export class Bid extends Component {
                                     <Button basic color='green' onClick={this.handleClickSell}>Sell</Button>
                                     <Button basic color='red' onClick={this.handleClickBuy}>Buy</Button>
                                     <Form.Input name='amount' label='Amount' type='number' value={this.state.amount} onChange={this.handleChange} />
+                                    <Button basic color='green' onClick={this.handleClickMarketSell}>Market sell</Button>
                                     <Button basic color='red' onClick={this.handleClickMarketBuy}>Market buy</Button>
                             </Form>
                         </Grid.Column>
@@ -134,6 +135,31 @@ export class Bid extends Component {
     }
     
     handleClickMarketBuy = () => {
+        const eos = Eos({
+            httpEndpoint: 'http://' + window.location.hostname + ':8888',
+            keyProvider: this.state.pk,
+            debug: true
+        });
+        const data = {
+            bidder: this.state.accountName,
+            amount: this.state.amount
+        };
+        eos.transaction({
+            actions: [
+                {
+                    account: 'decidex',
+                    name: "marketbuy",
+                    authorization: [{
+                            actor: 'decidex',
+                            permission: 'active'
+                        }],
+                    data: data
+                }
+            ]
+        }).then(result => console.log(result));
+    }
+    
+    handleClickMarketSell = () => {
         const eos = Eos({
             httpEndpoint: 'http://' + window.location.hostname + ':8888',
             keyProvider: this.state.pk,

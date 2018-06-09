@@ -92,7 +92,7 @@ public:
 
 	/// @abi action
 
-	void marketsell(account_name bidder, uint32_t amount) {
+	void marketbuy(account_name bidder, uint32_t amount) {
 		uint64_t now = current_time();
 		while (amount > 0) {
 			// Find sell with min price
@@ -118,6 +118,42 @@ public:
 					bids.erase(sellSide);
 				} else {
 					bids.modify(sellSide, decidex_account, [&amount](auto& g) {
+						g.amount -= amount;
+					});
+					amount = 0;
+				}
+			} else {
+				break;
+			}
+		}
+	}
+	
+	void marketsell(account_name bidder, uint32_t amount) {
+		uint64_t now = current_time();
+		while (amount > 0) {
+			// Find sell with min price
+			auto buySide = bids.end();
+			for (auto itr = bids.begin(); itr != bids.end(); itr++) {
+				if (itr->bidType == BUY && (buySide == bids.end() || buySide->price < itr->price)) {
+					buySide = itr;
+				}
+			}
+			if (buySide != bids.end()) {
+				// Match
+				uint64_t pkey = orders.available_primary_key();
+				orders.emplace(decidex_account, [&pkey, &buySide, &bidder, &amount, &now](auto& g) {
+					g.pkey = pkey;
+					g.seller = bidder;
+					g.buyer = buySide->bidder;
+					g.amount = amount < buySide->amount ? amount : buySide->amount;
+					g.price = buySide->price;
+					g.createdat = now;
+				});
+				if (amount >= buySide->amount) {
+					amount -= buySide->amount;
+					bids.erase(buySide);
+				} else {
+					bids.modify(buySide, decidex_account, [&amount](auto& g) {
 						g.amount -= amount;
 					});
 					amount = 0;
@@ -167,4 +203,4 @@ private:
 
 };
 
-EOSIO_ABI(decidex, (placebid) (marketsell) (match) (clear))
+EOSIO_ABI(decidex, (placebid) (marketbuy) (marketsell) (match) (clear))
