@@ -13,6 +13,8 @@ services:
       - "1337"
     working_dir: /code
     command: /bin/bash -c "npm install && node main.js"
+    environment:
+      - KEY_PROVIDER=5Ht9SziuuAFjNLs21acJPaT2Zgowjb6LodhGpCkUVHC5yYmzXWE
 
   react:
     image: node:10.3.0

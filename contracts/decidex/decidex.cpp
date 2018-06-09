@@ -33,44 +33,60 @@ public:
 
 	void match(account_name caller) {
 		require_auth(caller);
-		auto itr = bids.begin();
-		if (itr != bids.end()) {
-			// Generate fixture
-			uint64_t pkey = orders.available_primary_key();
-			orders.emplace(decidex_account, [&pkey, &itr](auto& g) {
-				g.pkey = pkey++;
-				if (itr->bidType == BUY) {
-					g.seller = decidex_account;
-					g.buyer = itr->bidder;
-				} else {
-					g.seller = itr->bidder;
-					g.buyer = decidex_account;
+		while (true) {
+			// Find sell with min price
+			// Find buy bid with max price
+			auto buySide = bids.end();
+			auto sellSide = bids.end();
+			for (auto itr = bids.begin(); itr != bids.end(); itr++) {
+				if (itr->bidType == BUY && (buySide == bids.end() || buySide->price < itr->price)) {
+					buySide = itr;
+				} else if (itr->bidType == SELL && (sellSide == bids.end() || sellSide->price > itr->price)) {
+					sellSide = itr;
 				}
-				g.amount = itr->amount;
-				g.price = itr->price;
-			});
-			bids.erase(itr);
+			}
+			if (buySide != bids.end() && sellSide != bids.end() && buySide->price >= sellSide->price) {
+				// Match
+				uint64_t pkey = orders.available_primary_key();
+				orders.emplace(decidex_account, [&pkey, &buySide, &sellSide](auto& g) {
+					g.pkey = pkey;
+					g.seller = sellSide->bidder;
+					g.buyer = buySide->bidder;
+					g.amount = buySide->amount < sellSide->amount ? buySide->amount : sellSide->amount;
+					g.price = (buySide->price + sellSide->price) / 2;
+				});
+				if (buySide->amount == sellSide->amount) {
+					bids.erase(buySide);
+					bids.erase(sellSide);
+				} else if (buySide->amount < sellSide->amount) {
+					bids.erase(buySide);
+					bids.modify(sellSide, sellSide->pkey, [&buySide](auto& g) {
+						g.amount -= buySide->amount;
+					});
+				} else {
+					bids.erase(sellSide);
+					bids.modify(buySide, buySide->pkey, [&sellSide](auto& g) {
+						g.amount -= sellSide->amount;
+					});
+				}
+			} else {
+				break;
+			}
 		}
 	}
-private:
+	
+	/// @abi action
 
-	/*void modify(int32_t val) {
-		auto itr = existing_values.begin();
-		if (itr == existing_values.end()) {
-			uint64_t pkey = existing_values.available_primary_key();
-			existing_values.emplace(decidex_account, [&val, &pkey](auto& g) {
-				g.pkey = pkey;
-				g.val = val;
-				print(g.pkey, " ", g.val);
-			});
-			print(val);
-		} else {
-			existing_values.modify(itr, itr->pkey, [&val](auto& g) {
-				g.val = g.val + val;
-				print(g.pkey, " ", g.val);
-			});
+	void clear(account_name caller) {
+		for (auto itr = bids.begin(); itr != bids.end(); itr = bids.begin()) {
+			bids.erase(itr);
 		}
-	}*/
+		for (auto itr = orders.begin(); itr != orders.end(); itr = orders.begin()) {
+			orders.erase(itr);
+		}
+	}
+	
+private:
 
 	/// @abi table bid i64
 
@@ -106,4 +122,4 @@ private:
 
 };
 
-EOSIO_ABI(decidex, (placebid) (match))
+EOSIO_ABI(decidex, (placebid) (match) (clear))

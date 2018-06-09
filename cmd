@@ -28,6 +28,8 @@ executed transaction: d3744a19147c2d0d293612ceb16fe793c1210b552912e8dab3bfc979d8
 #         eosio <= eosio::newaccount            {"creator":"eosio","name":"test","owner":{"threshold":1,"keys":[{"key":"EOS6MRyAjQq8ud7hVNYcfnVPJqcV...
 warning: transaction executed locally, but may not be confirmed by the network yet
 
+$ cleos create account eosio test34 EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV EOS6NUYkhPvdTRG22Vzcd9AyA9anuke4LE7GZprXqAsm7aN1H3q5a
+
 $ cleos get accounts EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV
 {
   "account_names": [
@@ -46,6 +48,8 @@ $ cleos set contract decidex /contracts/decidex -p decidex
 $ cleos set abi decidex /contracts/decidex/decidex.abi
 
 $ cleos push action decidex placebid '["test", 0, 15, 11]' -p test
+$ cleos push action decidex placebid '["test", 0, 15, 16]' -p test
+$ cleos push action decidex placebid '["test34", 1, 15, 11]' -p test34
 $ cleos get table decidex decidex bid
 {
   "rows": [{
@@ -72,3 +76,5 @@ $ cleos get table decidex decidex order
   ],
   "more": false
 }
+
+$ cleos push action decidex clear '["test"]' -p test
