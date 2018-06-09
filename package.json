@@ -1,0 +1,13 @@
+{
+	"name": "TestEosjs",
+	"version": "1.0.0",
+	"keywords": [
+		"server"
+	],
+	"author": "adolgarev",
+	"contributors": [],
+	"dependencies": {
+		"eosjs": "^14.1.0",
+		"websocket": "^1.0.26"
+	}
+}

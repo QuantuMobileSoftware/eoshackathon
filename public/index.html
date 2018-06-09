@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Simple counter</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body>
+		<div>Counter value:</div><div id="result"></div>
+		<input type="number" value="1" id="val" />
+		<input type="button" value="Add" id="addButton" />
+		<input type="button" value="Subtract" id="subtractButton" />
+		<input type="button" value="Set" id="setButton" />
+		<script>
+			function pushAction(name) {
+				controlWebsocket.send(JSON.stringify({name: name, data: {val: parseInt(document.getElementById('val').value)}}));
+			}
+			
+                        var controlWebsocket = new WebSocket("ws://" + window.location.hostname + ":1337/" + window.location.search);
+                        controlWebsocket.onopen = function () {
+				document.getElementById("addButton").addEventListener("click", function () {
+					pushAction('add');
+				});
+				document.getElementById("subtractButton").addEventListener("click", function () {
+					pushAction('subtract');
+				});
+				document.getElementById("setButton").addEventListener("click", function () {
+					pushAction('set');
+				});
+                        };
+                        controlWebsocket.onclose = function () {
+                        };
+		</script>
+	</body>
+</html>
