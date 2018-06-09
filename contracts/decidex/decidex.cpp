@@ -53,7 +53,7 @@ public:
 					g.seller = sellSide->bidder;
 					g.buyer = buySide->bidder;
 					g.amount = buySide->amount < sellSide->amount ? buySide->amount : sellSide->amount;
-					g.price = (buySide->price + sellSide->price) / 2;
+					g.price = sellSide->price;
 				});
 				if (buySide->amount == sellSide->amount) {
 					bids.erase(buySide);
@@ -83,6 +83,44 @@ public:
 		}
 		for (auto itr = orders.begin(); itr != orders.end(); itr = orders.begin()) {
 			orders.erase(itr);
+		}
+	}
+	
+	/// @abi action
+
+	void marketsell(account_name bidder, uint32_t amount) {
+		while (amount > 0) {
+			// Find sell with min price
+			auto sellSide = bids.end();
+			for (auto itr = bids.begin(); itr != bids.end(); itr++) {
+				if (itr->bidType == SELL && (sellSide == bids.end() || sellSide->price > itr->price)) {
+					sellSide = itr;
+				}
+			}
+			if (sellSide != bids.end()) {
+				print("Match found");
+				// Match
+				uint64_t pkey = orders.available_primary_key();
+				orders.emplace(decidex_account, [&pkey, &sellSide, &bidder, &amount](auto& g) {
+					g.pkey = pkey;
+					g.seller = sellSide->bidder;
+					g.buyer = bidder;
+					g.amount = amount < sellSide->amount ? amount : sellSide->amount;
+					g.price = sellSide->price;
+				});
+				if (amount >= sellSide->amount) {
+					bids.erase(sellSide);
+					amount -= sellSide->amount;
+				} else {
+					bids.modify(sellSide, sellSide->pkey, [&amount](auto& g) {
+						g.amount -= amount;
+					});
+					amount = 0;
+				}
+			} else {
+				print("Match not found");
+				break;
+			}
 		}
 	}
 	
@@ -122,4 +160,4 @@ private:
 
 };
 
-EOSIO_ABI(decidex, (placebid) (match) (clear))
+EOSIO_ABI(decidex, (placebid) (marketsell) (match) (clear))
