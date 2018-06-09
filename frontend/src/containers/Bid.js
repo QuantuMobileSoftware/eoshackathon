@@ -1,24 +1,23 @@
 import React, {Component, Fragment} from 'react';
-import axios from "axios"
-import Eos from "eosjs"
+import Eos from "eosjs";
 
-export class Bit extends Component {
+export class Bid extends Component {
     render() {
         return (
-            <Fragment>
-                <input type="number" id="amount" placeholder="0"/>
-                <input type="number" id="price" placeholder="0"/>
-                <input type="text" id="pk" placeholder="pk"/>
-                <input type="text" id="name" placeholder="Name"/>
-                <input type="button" onClick={this.handleClickBuy} value="Buy"/>
-                <input type="button" onClick={this.handleClickSell} value="Sell"/>
-            </Fragment>
-        )
+                <Fragment>
+                        <input type="number" id="amount" placeholder="0"/>
+                        <input type="number" id="price" placeholder="0"/>
+                        <input type="text" id="pk" placeholder="pk"/>
+                        <input type="text" id="name" placeholder="Name"/>
+                        <input type="button" onClick={this.handleClickBuy} value="Buy"/>
+                        <input type="button" onClick={this.handleClickSell} value="Sell"/>
+                </Fragment>
+                );
     }
 
     handleClickBuy = () => {
         const eos = Eos({
-            httpEndpoint: 'http://localhost:8888',
+            httpEndpoint: 'http://' + window.location.hostname + ':8888',
             keyProvider: document.getElementById('pk').value,
             debug: true
         });
@@ -32,17 +31,18 @@ export class Bit extends Component {
                     account: 'decidex',
                     name: "placebid",
                     authorization: [{
-                        actor: 'decidex',
-                        permission: 'active'
-                    }],
+                            actor: 'decidex',
+                            permission: 'active'
+                        }],
                     data: data
                 }
             ]
         }).then(result => console.log(result));
     }
+
     handleClickSell = () => {
         const eos = Eos({
-            httpEndpoint: 'http://localhost:8888',
+            httpEndpoint: 'http://' + window.location.hostname + ':8888',
             keyProvider: document.getElementById('pk').value,
             debug: true
         });
@@ -56,9 +56,9 @@ export class Bit extends Component {
                     account: 'decidex',
                     name: "placebid",
                     authorization: [{
-                        actor: 'decidex',
-                        permission: 'active'
-                    }],
+                            actor: 'decidex',
+                            permission: 'active'
+                        }],
                     data: data
                 }
             ]
@@ -66,10 +66,15 @@ export class Bit extends Component {
     }
 
     componentDidMount() {
-        const controlWebsocket = new WebSocket("ws://" + window.location.hostname + ":1337/" + window.location.search);
+        const controlWebsocket = new WebSocket("ws://" + window.location.hostname + ":1337/");
         controlWebsocket.onopen = function () {
+        };
+        controlWebsocket.onmessage = function (evt) {
+            var message = JSON.parse(evt.data);
+            console.log("controlWebsocket", message);
         };
         controlWebsocket.onclose = function () {
         };
     }
 }
+;

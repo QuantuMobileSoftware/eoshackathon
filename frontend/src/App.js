@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import {Bit} from "./containers/Bit.js"
+import {Bid} from "./containers/Bid.js"
 
 class App extends Component {
   render() {
     return (
       <div>
-          <Bit></Bit>
+          <Bid></Bid>
       </div>
     );
   }

@@ -16,7 +16,7 @@ services:
     environment:
       - KEY_PROVIDER=5Ht9SziuuAFjNLs21acJPaT2Zgowjb6LodhGpCkUVHC5yYmzXWE
 
-  react:
+  frontend:
     image: node:10.3.0
     ports:
       - 3000:3000
