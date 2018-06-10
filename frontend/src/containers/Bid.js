@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import Eos from "eosjs";
 import { Segment, Button, Form, Grid } from 'semantic-ui-react';
 import Chart from "../components/Chart";
@@ -13,7 +13,13 @@ export class Bid extends Component {
             pk: "",
             accountName: "",
             sellSide: [],
-            buySide: []
+            buySide: [],
+            fieldsWithError: {
+                accountName: false,
+                pk: false,
+                amount: false,
+                price: false
+            }
         };
         
         this.state.orders = [
@@ -26,8 +32,6 @@ export class Bid extends Component {
                 volume: 32
             }
         ];
-
-        this.handleInputChange = this.handleInputChange.bind(this);
     }
 
     render() {
@@ -37,15 +41,15 @@ export class Bid extends Component {
                     <Grid stackable>
                         <Grid.Column width={4}>
                             <Form inverted>
-                                    <Form.Input name='accountName' label='Account name' type='text' value={this.state.accountName} onChange={this.handleChange} />
-                                    <Form.Input name='pk' label='pk' type='password' value={this.state.pk} onChange={this.handleChange} />
-                                    <Form.Input name='amount' label='Amount' type='number' value={this.state.amount} onChange={this.handleChange} />
-                                    <Form.Input name='price' label='Price' type='number' value={this.state.price} onChange={this.handleChange} />
-                                    <Button basic color='green' onClick={this.handleClickSell}>Sell</Button>
-                                    <Button basic color='red' onClick={this.handleClickBuy}>Buy</Button>
-                                    <Form.Input name='amount' label='Amount' type='number' value={this.state.amount} onChange={this.handleChange} />
-                                    <Button basic color='green' onClick={this.handleClickMarketSell}>Market sell</Button>
-                                    <Button basic color='red' onClick={this.handleClickMarketBuy}>Market buy</Button>
+                                <Form.Input error={this.state.fieldsWithError.accountName} name='accountName' label='Account name' type='text' value={this.state.accountName} onChange={this.handleChange} />
+                                <Form.Input error={this.state.fieldsWithError.pk} name='pk' label='pk' type='password' value={this.state.pk} onChange={this.handleChange} />
+                                <Form.Input error={this.state.fieldsWithError.amount} name='amount' label='Amount' type='number' value={this.state.amount} onChange={this.handleChange} />
+                                <Form.Input error={this.state.fieldsWithError.price} name='price' label='Price' type='number' value={this.state.price} onChange={this.handleChange} />
+                                <Button basic color='green' onClick={this.handleClickSell}>Sell</Button>
+                                <Button basic color='red' onClick={this.handleClickBuy}>Buy</Button>
+                                <Form.Input error={this.state.fieldsWithError.amount} name='amount' label='Amount' type='number' value={this.state.amount} onChange={this.handleChange} />
+                                <Button basic color='green' onClick={this.handleClickMarketSell}>Market sell</Button>
+                                <Button basic color='red' onClick={this.handleClickMarketBuy}>Market buy</Button>
                             </Form>
                         </Grid.Column>
                         <Grid.Column width={3}>
@@ -63,24 +67,44 @@ export class Bid extends Component {
         if (name === "amount" || name === "price") {
             value = parseInt(value);
         }
-        this.setState({[name]: value});
-    }
-
-    handleInputChange = (event) => {
-        const target = event.target;
-        var value = target.type === 'checkbox' ? target.checked : target.value;
-        const name = target.name;
-
-        if (name === "amount" || name === "price") {
-            value = parseInt(value);
-        }
-
         this.setState({
-            [name]: value
+            [name]: value,
+            fieldsWithError: Object.assign({}, this.state.fieldsWithError, {[name]: false})
         });
     }
 
+    validate = () => {
+        var fieldsWithError = Object.assign({}, this.state.fieldsWithError);
+        if (this.state.accountName === "") {
+            fieldsWithError.accountName = true;
+        }
+        if (this.state.pk === "") {
+            fieldsWithError.pk = true;
+        }
+        if (!(this.state.amount > 0)) {
+            fieldsWithError.amount = true;
+        }
+        if (!(this.state.price > 0)) {
+            fieldsWithError.price = true;
+        }
+        
+        for(var fieldName in fieldsWithError) {
+            if (fieldsWithError[fieldName]) {
+                this.setState({
+                    fieldsWithError: fieldsWithError
+                });
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
     handleClickBuy = () => {
+        if (this.validate()) {
+            return;
+        }
+        
         const eos = Eos({
             httpEndpoint: 'http://' + window.location.hostname + ':8888',
             keyProvider: this.state.pk,
@@ -108,6 +132,10 @@ export class Bid extends Component {
     }
 
     handleClickSell = () => {
+        if (this.validate()) {
+            return;
+        }
+        
         const eos = Eos({
             httpEndpoint: 'http://' + window.location.hostname + ':8888',
             keyProvider: this.state.pk,
@@ -135,6 +163,10 @@ export class Bid extends Component {
     }
     
     handleClickMarketBuy = () => {
+        if (this.validate()) {
+            return;
+        }
+        
         const eos = Eos({
             httpEndpoint: 'http://' + window.location.hostname + ':8888',
             keyProvider: this.state.pk,
@@ -160,6 +192,10 @@ export class Bid extends Component {
     }
     
     handleClickMarketSell = () => {
+        if (this.validate()) {
+            return;
+        }
+        
         const eos = Eos({
             httpEndpoint: 'http://' + window.location.hostname + ':8888',
             keyProvider: this.state.pk,
