@@ -14,53 +14,20 @@ const eos = Eos({httpEndpoint: 'http://eosio:8888', keyProvider: process.env.KEY
 
 const serverPort = parseInt(process.env.SERVER_PORT || 1337, 10);
 
-var serveStatic = function (request, response) {
-    response.setHeader('Access-Control-Allow-Origin', '*');
-    const parsedUrl = url.parse(request.url, true);
-    let pathname = `./${parsedUrl.pathname}`;
-    var ext = path.parse(pathname).ext;
-    const map = {
-        '.ico': 'image/x-icon',
-        '.html': 'text/html',
-        '.js': 'text/javascript',
-        '.json': 'application/json',
-        '.css': 'text/css',
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.wav': 'audio/wav',
-        '.mp3': 'audio/mpeg',
-        '.svg': 'image/svg+xml',
-        '.pdf': 'application/pdf',
-        '.doc': 'application/msword'
-    };
-
-    fs.exists(pathname, function (exist) {
-        if (!exist) {
-            response.statusCode = 404;
-            response.end(`File ${pathname} not found!`);
-            return;
-        }
-
-        if (fs.statSync(pathname).isDirectory()) {
-            ext = '.html';
-            pathname += '/index' + ext;
-        }
-
-        fs.readFile(pathname, function (err, data) {
-            if (err) {
-                response.statusCode = 500;
-                response.end(`Error getting the file: ${err}.`);
-            } else {
-                response.setHeader('Content-type', map[ext] || 'text/plain');
-                response.end(data);
-            }
-        });
-    });
-};
-
 var server = http.createServer(function (request, response) {
     console.log((new Date()), `${request.method} ${request.url}`);
-    serveStatic(request, response);
+    
+    const parsedUrl = url.parse(request.url, true);
+    if (parsedUrl.pathname === '/orders.csv') {
+        response.setHeader('Access-Control-Allow-Origin', '*');
+        response.setHeader('Content-type', 'text/plain');
+        response.end(ordersCsv);
+        return;
+    }
+    
+    response.statusCode = 404;
+    response.end(`File ${parsedUrl.pathname} not found!`);
+    return;
 });
 
 server.listen(serverPort, function () {
@@ -125,6 +92,7 @@ setInterval(function () {
 }, 1000);
 
 var orders = [];
+var ordersCsv = "";
 setInterval(function () {
     eos.getTableRows("true", "decidex", "decidex", "order", undefined, undefined, undefined, -1).then(result => {
         if (result.rows === undefined || result.rows.length < orders.length) {
@@ -164,16 +132,7 @@ setInterval(function () {
             return `${x.date/1000000},${x.volume},${x.close},${x.average}`;
         });
         data.unshift('Date,Volume,Close,Average');
-        fs.writeFile('orders.csv.part', data.join('\n'), function (err) {
-            if (err) {
-                return console.log('write error: ' + err);
-            }
-            fs.rename('orders.csv.part', 'orders.csv', function (err) {
-                if (err) {
-                    return console.log('rename error: ' + err);
-                }
-            });
-        });
+        ordersCsv = data.join('\n');
 //        sendToAllConnectedPeers({orders: orders});
     });
 }, 1000);
