@@ -1,0 +1,48 @@
+server:
+  image: node:10.3.0
+  ports:
+    - 1337:1337
+  volumes:
+    - ./:/code
+  links:
+    - eosio
+  expose:
+    - "1337"
+  working_dir: /code
+  command: /bin/bash -c "npm install && node main.js"
+  environment:
+    - KEY_PROVIDER=5Ht9SziuuAFjNLs21acJPaT2Zgowjb6LodhGpCkUVHC5yYmzXWE
+
+frontend:
+  image: node:10.3.0
+  ports:
+    - 3000:3000
+  volumes:
+    - ./frontend:/code
+  links:
+    - eosio
+    - server
+  working_dir: /code
+  command: /bin/bash -c "npm install && npm run-script build"
+
+eosio:
+  image: eosio/eos-dev:20180608
+  command: /bin/bash -c "nodeos -e -p eosio --plugin eosio::wallet_api_plugin --plugin eosio::wallet_plugin --plugin eosio::producer_plugin --plugin eosio::history_plugin --plugin eosio::chain_api_plugin --plugin eosio::history_api_plugin --plugin eosio::http_plugin -d /mnt/dev/data --config-dir /mnt/dev/config --http-server-address=0.0.0.0:8888 --access-control-allow-origin=* --contracts-console"
+  ports:
+    - 8888:8888
+    - 9876:9876
+  expose:
+    - "8888"
+  volumes:
+    - ./data/work:/work
+    - ./data/eosio/data:/mnt/dev/data
+    - ./data/eosio/config:/mnt/dev/config
+    - ./contracts/decidex:/contracts/decidex
+
+nginx:
+  image: nginx:1.15.0
+  volumes:
+    - ./frontend/build:/usr/share/nginx/html:ro
+  environment:
+    - VIRTUAL_HOST=decidex.quantumobile.co
+    - VIRTUAL_PORT=80
