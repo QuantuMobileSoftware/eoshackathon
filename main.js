@@ -75,7 +75,7 @@ setInterval(function () {
             }
         ]
     }).then(result => console.log(result));
-}, 5000);
+}, 1000);
 
 function sendToAllConnectedPeers(message) {
     Object.values(activeConnections).forEach(function (connection) {
@@ -89,7 +89,7 @@ setInterval(function () {
         bids = result.rows;
         sendToAllConnectedPeers({bids: bids});
     });
-}, 5000);
+}, 1000);
 
 var orders = [];
 var ordersCsv = "";
@@ -135,7 +135,7 @@ setInterval(function () {
         ordersCsv = data.join('\n');
 //        sendToAllConnectedPeers({orders: orders});
     });
-}, 5000);
+}, 1000);
 
 // For DEMO purposes only
-setInterval(tradeEmulator.pushRandomAskAndBid, 3600000);
+setInterval(tradeEmulator.pushRandomAskAndBid, 180000);
