@@ -89,7 +89,7 @@ setInterval(function () {
         bids = result.rows;
         sendToAllConnectedPeers({bids: bids});
     });
-}, 1000);
+}, 5000);
 
 var orders = [];
 var ordersCsv = "";
@@ -135,7 +135,7 @@ setInterval(function () {
         ordersCsv = data.join('\n');
 //        sendToAllConnectedPeers({orders: orders});
     });
-}, 10000);
+}, 5000);
 
 // For DEMO purposes only
 setInterval(tradeEmulator.pushRandomAskAndBid, 3600000);
