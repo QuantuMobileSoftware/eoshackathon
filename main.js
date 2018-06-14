@@ -135,7 +135,7 @@ setInterval(function () {
         ordersCsv = data.join('\n');
 //        sendToAllConnectedPeers({orders: orders});
     });
-}, 1000);
+}, 10000);
 
 // For DEMO purposes only
-setInterval(tradeEmulator.pushRandomAskAndBid, 17000);
+setInterval(tradeEmulator.pushRandomAskAndBid, 3600000);
